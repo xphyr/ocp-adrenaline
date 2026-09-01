@@ -1,5 +1,7 @@
 # ocp-adrenaline
 
+<img src="images/ocp-adrenaline.png" alt="ocp-adrenaline logo" width="220" />
+
 A Red Hat CoreOS-friendly OpenShift CSR recovery helper.
 
 ## Summary
