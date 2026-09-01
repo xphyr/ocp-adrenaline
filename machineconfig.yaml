@@ -1,0 +1,39 @@
+apiVersion: machineconfiguration.openshift.io/v1
+kind: MachineOSConfig
+metadata:
+  name: ocp-adrenaline-master
+spec:
+  machineConfigPool:
+    name: master
+  imageBuilder:
+    imageBuilderType: Job
+  renderedImagePushSpec: image-registry.openshift-image-registry.svc:5000/openshift-machine-config-operator/ocp-adrenaline-master:latest
+  renderedImagePushSecret:
+    name: ocp-adrenaline-master-push-secret
+  containerFile:
+    - containerfileArch: NoArch
+      content: |-
+        FROM configs AS final
+
+        COPY ./ocp-adrenaline /usr/local/bin/ocp-adrenaline
+        COPY ./ocp-adrenaline.service /etc/systemd/system/ocp-adrenaline.service
+
+        RUN chmod 0755 /usr/local/bin/ocp-adrenaline && \
+            chmod 0644 /etc/systemd/system/ocp-adrenaline.service && \
+            systemctl enable ocp-adrenaline.service && \
+            bootc container lint
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: ocp-adrenaline-master-push-secret
+  namespace: openshift-machine-config-operator
+stringData:
+  .dockerconfigjson: '{"auths":{"image-registry.openshift-image-registry.svc:5000":{"auth":"REPLACE_WITH_BASE64_AUTH"}}}'
+type: kubernetes.io/dockerconfigjson
+---
+# Optional: if you want to target only a custom master-only MCP instead of the built-in master pool,
+# create a custom MCP and label only the control-plane nodes that should receive this layered image.
+# Example:
+# oc label node <master-node-name> node-role.kubernetes.io/ocp-adrenaline-master=
+# and create a MachineConfigPool named ocp-adrenaline-master with those nodes.

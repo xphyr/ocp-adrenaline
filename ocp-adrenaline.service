@@ -1,0 +1,18 @@
+[Unit]
+Description=OpenShift CSR recovery monitor
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+WorkingDirectory=/opt/ocp-adrenaline
+Environment=KUBECONFIG=/etc/kubernetes/admin.conf
+ExecStart=/usr/local/bin/ocp-adrenaline run --kubeconfig /etc/kubernetes/admin.conf
+Restart=no
+RuntimeMaxSec=10m
+TimeoutStopSec=30s
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target
